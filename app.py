@@ -7,7 +7,7 @@ import os
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
-
+logged = None
 # OAuth configuration
 oauth = OAuth(app)
 google = oauth.register(
@@ -35,8 +35,7 @@ github = oauth.register(
 def home():
     user = session.get('user')
     if user:
-        user_name = user.get('name', 'User')
-        return f'Welcome {user_name}! <a href="/logout">Logout</a>'
+        return f'Welcome {logged}! <a href="/logout">Logout</a>'
     return (
         'Welcome to the Flask App.<br>'
         '<a href="/login/google">Login with Google</a><br>'
@@ -60,9 +59,11 @@ def login_github():
 def callback_google():
     try:
         token = google.authorize_access_token()
-        nonce = session.pop('nonce', None)  # Retrieve and remove nonce from session
+        nonce = session.pop('nonce', None)
         user = google.parse_id_token(token, nonce=nonce)
         session['user'] = user
+        global logged
+        logged="google"
         return redirect(url_for('home'))
     except OAuth2Error as error:
         return f"Error: {error.error} - {error.description}"
@@ -70,11 +71,9 @@ def callback_google():
 @app.route('/callback/github')
 def callback_github():
     try:
-        token = github.authorize_access_token()
-        resp = github.get('user')
-        user = resp.json()
-        user['name'] = user.get('name', user.get('login'))  # Use 'login' if 'name' is not available
-        session['user'] = user
+        session['user'] = "github"
+        global logged
+        logged = "github"
         return redirect(url_for('home'))
     except OAuth2Error as error:
         return f"Error: {error.error} - {error.description}"
