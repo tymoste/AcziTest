@@ -28,7 +28,8 @@ github = oauth.register(
     client_secret='c8b35fa27665e300cd608bcfc0b1ce545fca18d6',
     access_token_url='https://github.com/login/oauth/access_token',
     authorize_url='https://github.com/login/oauth/authorize',
-    client_kwargs={'scope': 'user:email'}
+    client_kwargs={'scope': 'user:email'},
+    redirect_uri='https://aczitest.azurewebsites.net/callback/github'
 )
 @app.route('/')
 def home():
